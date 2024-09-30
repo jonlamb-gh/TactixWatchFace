@@ -1,0 +1,4 @@
+<fonts>
+    <font id="Icons" filename="icons_24.fnt" antialias="true"/>
+    <font id="WeatherIcons" filename="weather_icons_24.fnt" antialias="true"/>
+</fonts>
