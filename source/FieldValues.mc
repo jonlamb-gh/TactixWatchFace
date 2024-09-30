@@ -123,10 +123,14 @@ class FieldValues {
                 if((time != null) && (time[:latestValue] != null)) {
                     var calTime = convertCalendarEventComplicationTime(settings.is24Hour, time[:latestValue] as String);
                     if(calTime != null) {
-                        var calHour = calTime[:hour24] as Number;
-                        var calMin = calTime[:min] as Number;
-                        // Only show if the event is not tomorrows event
-                        if((now.hour <= calHour) && (now.min <= calMin)) {
+                        var calSeconds = (calTime[:hour24] as Number * Gregorian.SECONDS_PER_HOUR)
+                            + (calTime[:min] as Number * Gregorian.SECONDS_PER_MINUTE);
+                        var nowSeconds = (now.hour * Gregorian.SECONDS_PER_HOUR)
+                            + (now.min * Gregorian.SECONDS_PER_MINUTE);
+
+                        // Don't show the event if it's for tomorrow
+                        // TODO - need to check if this is how it works on device
+                        if(nowSeconds <= calSeconds) {
                             // TODO use global format time
                             fieldValue[:value] = time[:latestValue] as String;
                         }
