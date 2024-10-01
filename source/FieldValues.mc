@@ -113,7 +113,9 @@ class FieldValues {
         switch (type) {
             case FIELD_TYPE_NOTIFICATIONS: {
                 fieldValue[:icon] = "h";
-                fieldValue[:value] = settings.notificationCount.format(INTEGER_FORMAT);
+                if(settings.connectionAvailable == true) {
+                    fieldValue[:value] = settings.notificationCount.format(INTEGER_FORMAT);
+                }
                 break;
             }
 
