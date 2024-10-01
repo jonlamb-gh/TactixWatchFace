@@ -121,6 +121,8 @@ class FieldValues {
                 fieldValue[:icon] = "j";
                 var time = complicationsData[Complications.COMPLICATION_TYPE_CALENDAR_EVENTS];
                 if((time != null) && (time[:latestValue] != null)) {
+                    // TODO - cache some state, don't do this when we don't have to
+                    // can be once a minute
                     var calTime = convertCalendarEventComplicationTime(settings.is24Hour, time[:latestValue] as String);
                     if(calTime != null) {
                         var calSeconds = (calTime[:hour24] as Number * Gregorian.SECONDS_PER_HOUR)
@@ -426,7 +428,8 @@ class FieldValues {
         var bleInfo = settings.connectionInfo[:bluetooth];
         var wifiInfo = settings.connectionInfo[:wifi];
 
-        var icon = "c";
+        var icon = "a";
+        //var icon = "c";
 
         if((bleInfo != null) && (bleInfo.state == System.CONNECTION_STATE_CONNECTED)) {
             icon = "l";

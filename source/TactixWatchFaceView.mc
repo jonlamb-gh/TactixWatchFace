@@ -29,11 +29,58 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
 
     private static const DATA_FIELD_ICON_TO_TEXT_SPACING as Number = 5;
 
-    private const DATA_FIELD_FONT_FACE = "RobotoCondensedBold";
-    private const DATA_FIELD_FONT_SIZE = 24;
+    private static const DATA_FIELD_FONT_FACE = "RobotoCondensedBold";
+    private static const DATA_FIELD_FONT_SIZE = 24;
 
-    private const TIME_FONT_FACE = "RobotoCondensedBold";
-    private const TIME_FONT_SIZE = 72;
+    private static const TIME_FONT_FACE = "RobotoCondensedBold";
+    private const TIME_FONT_SIZE = 82;
+
+    private static const MAJOR_TICK_HEIGHT = 17.0;
+    private static const MAJOR_TICK_HALF_WIDTH = 5.0;
+    private static const MINOR_TICK_HEIGHT = 17.0;
+    private static const MINOR_TICK_HALF_WIDTH = 2.5;
+    private static const MINOR_TICK_OFFSET = 3;
+    private static const MARKER_TICK_COLOR = 0xB5A67B; // brown-ish
+
+    // 0°, 90°, 180°, 270°
+    private static const MAJOR_TICK_RADIANS as Array<Float> = [
+        0.0,
+        Math.PI / 2.0,
+        Math.PI,
+        (3.0 * (Math.PI / 2.0)),
+    ];
+    private static const MAJOR_TICK_POLY as Array<Graphics.Point2D> = [
+        [-MAJOR_TICK_HALF_WIDTH, 0.0],
+        [-MAJOR_TICK_HALF_WIDTH, MAJOR_TICK_HEIGHT],
+        [MAJOR_TICK_HALF_WIDTH, MAJOR_TICK_HEIGHT],
+        [MAJOR_TICK_HALF_WIDTH, 0.0],
+    ];
+
+    // 30°, 60°, 120°, 150°, 210°, 240°, 300°, 330°
+    private static const MINOR_TICK_RADIANS as Array<Float> = [
+        Math.PI / 6.0,
+        (Math.PI / 6.0) * 2.0,
+        (Math.PI / 6.0) * 4.0,
+        (Math.PI / 6.0) * 5.0,
+        (Math.PI / 6.0) * 7.0,
+        (Math.PI / 6.0) * 8.0,
+        (Math.PI / 6.0) * 10.0,
+        (Math.PI / 6.0) * 11.0,
+    ];
+    private static const MINOR_TICK_POLY as Array<Graphics.Point2D> = [
+        [-MINOR_TICK_HALF_WIDTH, 0.0],
+        [-MINOR_TICK_HALF_WIDTH, MINOR_TICK_HEIGHT],
+        [MINOR_TICK_HALF_WIDTH, MINOR_TICK_HEIGHT],
+        [MINOR_TICK_HALF_WIDTH, 0.0],
+    ];
+
+    private static const MINUTE_HAND_HEIGHT = 30;
+    private static const MINUTE_HAND_POLY as Array<Graphics.Point2D> = [
+        [-20.0, 0.0],
+        [0.0, 30.0],
+        [20.0, 0.0],
+        [0.0, 15.0],
+    ];
 
     private static const DATA_FIELD_LAYOUTS as Array<DataFieldLayout> = [
         { :textAngle => 15, :direction => Graphics.RADIAL_TEXT_DIRECTION_CLOCKWISE } as DataFieldLayout,
@@ -84,10 +131,17 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
     private var lastAsleepMinute as Number or Null = null;
     private var burnInOffsetIndex as Number = 0;
 
+    // displayRadius == width == height
     private var displayRadius as Number = 0;
     private var dataFieldTextRadius as Number = 0;
     private var dataFieldIconRadius as Number = 0;
+    private var majorMarkerTickRadius as Number = 0;
+    private var minorMarkerTickRadius as Number = 0;
+    private var minuteHandRadius as Number = 0;
 
+    private var centerTransform as Graphics.AffineTransform = new Graphics.AffineTransform();
+
+    // TODO make calendar icon bigger
     private var timeFont as Graphics.VectorFont or Null = null;
     private var dataFieldFont as Graphics.VectorFont or Null = null;
     private var icons as WatchUi.FontResource or Null = null;
@@ -122,6 +176,13 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
         dataFieldTextRadius = displayRadius - (DATA_FIELD_FONT_SIZE / 2) - BURN_IN_SHIFT;
         dataFieldIconRadius = dataFieldTextRadius - DATA_FIELD_FONT_SIZE - DATA_FIELD_ICON_TO_TEXT_SPACING;
 
+        majorMarkerTickRadius = dataFieldIconRadius - (DATA_FIELD_FONT_SIZE / 2) - MAJOR_TICK_HEIGHT as Number;
+        minorMarkerTickRadius = majorMarkerTickRadius - MINOR_TICK_OFFSET;
+
+        minuteHandRadius = majorMarkerTickRadius - MINUTE_HAND_HEIGHT;
+
+        centerTransform.setToTranslation(displayRadius as Float, displayRadius as Float);
+
         timeFont = Graphics.getVectorFont({
             :face => TIME_FONT_FACE,
             :size => TIME_FONT_SIZE,
@@ -155,6 +216,8 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
         dc.setColor(Graphics.COLOR_TRANSPARENT, Graphics.COLOR_BLACK);
         dc.clear();
 
+        dc.setAntiAlias(true);
+
         // Do burn-in protection offsets when asleep
         // update on-sleep or every minute while asleep
         var adjustX = 0;
@@ -168,10 +231,16 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
             adjustX = BURN_IN_OFFSETS[burnInOffsetIndex][:x] as Number;
             adjustY = BURN_IN_OFFSETS[burnInOffsetIndex][:y] as Number;
         }
+        centerTransform.setToTranslation((adjustX + displayRadius) as Float, (adjustY + displayRadius) as Float);
 
         var settings = System.getDeviceSettings();
 
+        // Draw marker ticks and minute hand poly
+        drawMarkerTicks(dc);
+        drawMinuteHand(dc, timeInfo.min);
+
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
         for(var i = 0; i < DATA_FIELDS.size(); i++) {
             var fieldValue = fieldValues.getValue(timeInfo, settings, DATA_FIELDS[i]);
             var layout = DATA_FIELD_LAYOUTS[i];
@@ -232,6 +301,7 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
         }
 
         // Draw the current time
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         var time = getFormattedTime(timeInfo.hour, timeInfo.min, timeInfo.sec, false /* hideHoursLeadingZero */);
         var timeText = time[:hour] + ":" + time[:min];
         if(isAsleep == false) {
@@ -245,6 +315,51 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
             timeText,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
+    }
+
+    // Draws the major and minor tick markers
+    private function drawMarkerTicks(dc as Dc) as Void {
+        /*
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.drawLine(100, displayRadius, 300, displayRadius);
+        dc.drawLine(displayRadius, 100, displayRadius, 300);
+        dc.drawCircle(displayRadius, displayRadius, dataFieldTextRadius);
+        dc.drawCircle(displayRadius, displayRadius, dataFieldIconRadius);
+        dc.drawCircle(displayRadius, displayRadius, majorMarkerTickRadius);
+        */
+
+        dc.setColor(MARKER_TICK_COLOR, Graphics.COLOR_TRANSPARENT);
+
+        var localTransform = new Graphics.AffineTransform();
+        for(var idx = 0; idx < MAJOR_TICK_RADIANS.size(); idx += 1) {
+            localTransform.initialize();
+            localTransform.rotate(MAJOR_TICK_RADIANS[idx]);
+            localTransform.translate(0.0, majorMarkerTickRadius as Float);
+            var relPoly = localTransform.transformPoints(MAJOR_TICK_POLY);
+            var poly = centerTransform.transformPoints(relPoly);
+            dc.fillPolygon(poly);
+        }
+        
+        for(var idx = 0; idx < MINOR_TICK_RADIANS.size(); idx += 1) {
+            localTransform.initialize();
+            localTransform.rotate(MINOR_TICK_RADIANS[idx]);
+            localTransform.translate(0.0, minorMarkerTickRadius as Float);
+            var relPoly = localTransform.transformPoints(MINOR_TICK_POLY);
+            var poly = centerTransform.transformPoints(relPoly);
+            dc.fillPolygon(poly);
+        }
+    }
+
+    // num 0..=59
+    private function drawMinuteHand(dc as Dc, min as Number) as Void {
+        var theta = Math.PI + (((min as Float) / 60.0) * (2 * Math.PI));
+        dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+        var localTransform = new Graphics.AffineTransform();
+        localTransform.rotate(theta);
+        localTransform.translate(0.0, minuteHandRadius as Float);
+        var relPoly = localTransform.transformPoints(MINUTE_HAND_POLY);
+        var poly = centerTransform.transformPoints(relPoly);
+        dc.fillPolygon(poly);
     }
 
     // Called when this View is removed from the screen. Save the
@@ -270,6 +385,7 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
     }
 
     private function getIconPosition(radius as Number, layoutAngleDegrees as Number) as IconPosition {
+        // TODO use Graphics.AffineTransform for this instead
         var theta = -1.0 * Math.toRadians(layoutAngleDegrees as Float);
         var cos = Math.cos(theta);
         var sin = Math.sin(theta);
