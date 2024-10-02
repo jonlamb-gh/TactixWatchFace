@@ -35,6 +35,9 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
     private static const TIME_FONT_FACE = "RobotoCondensedBold";
     private const TIME_FONT_SIZE = 82;
 
+    private const PI2 = Math.PI * 2.0;
+    private const RADIANS_PER_MINUTE = PI2 / 60.0;
+
     private static const MAJOR_TICK_HEIGHT = 17.0;
     private static const MAJOR_TICK_HALF_WIDTH = 5.0;
     private static const MINOR_TICK_HEIGHT = 17.0;
@@ -350,9 +353,9 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
         }
     }
 
-    // num 0..=59
+    // min 0..=59
     private function drawMinuteHand(dc as Dc, min as Number) as Void {
-        var theta = Math.PI + (((min as Float) / 60.0) * (2 * Math.PI));
+        var theta = Math.PI + (RADIANS_PER_MINUTE * min);
         dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
         var localTransform = new Graphics.AffineTransform();
         localTransform.rotate(theta);
