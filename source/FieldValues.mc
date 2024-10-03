@@ -5,6 +5,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Test;
 import Toybox.ActivityMonitor;
+import Toybox.Activity;
 import Toybox.Time;
 import Toybox.Time.Gregorian;
 import Toybox.Weather;
@@ -152,9 +153,15 @@ class FieldValues {
 
             case FIELD_TYPE_HEART_RATE: {
                 fieldValue[:icon] = "i";
-                var sample = ActivityMonitor.getHeartRateHistory(1, true /* newest */).next();
-                if((sample != null) && (sample.heartRate != ActivityMonitor.INVALID_HR_SAMPLE)) {
-                    sample = sample.heartRate as Number;
+                var info = Activity.getActivityInfo();
+                var sample = info != null ? info.currentHeartRate : null;
+                if(sample == null) {
+                    var historicalHr = ActivityMonitor.getHeartRateHistory(1, true /* newest */).next();
+                    if((historicalHr != null) && (historicalHr.heartRate != ActivityMonitor.INVALID_HR_SAMPLE)) {
+                        sample = historicalHr.heartRate as Number;
+                    }
+                }
+                if(sample != null) {
                     fieldValue[:value] = sample.format(INTEGER_FORMAT);
                 }
                 break;
