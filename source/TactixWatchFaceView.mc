@@ -33,7 +33,7 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
     private static const DATA_FIELD_FONT_SIZE = 24;
 
     private static const TIME_FONT_FACE = "RobotoCondensedBold";
-    private const TIME_FONT_SIZE = 82;
+    private const TIME_FONT_SIZE = 88;
 
     private const PI2 = Math.PI * 2.0;
     private const RADIANS_PER_MINUTE = PI2 / 60.0;
@@ -77,12 +77,12 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
         [MINOR_TICK_HALF_WIDTH, 0.0],
     ];
 
-    private static const MINUTE_HAND_HEIGHT = 30;
+    private static const MINUTE_HAND_HEIGHT = 20;
     private static const MINUTE_HAND_POLY as Array<Graphics.Point2D> = [
-        [-20.0, 0.0],
-        [0.0, 30.0],
-        [20.0, 0.0],
-        [0.0, 15.0],
+        [-17.0, 0.0],
+        [0.0, 20.0],
+        [17.0, 0.0],
+        [0.0, 8.0],
     ];
 
     private static const DATA_FIELD_LAYOUTS as Array<DataFieldLayout> = [
@@ -342,7 +342,7 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
             var poly = centerTransform.transformPoints(relPoly);
             dc.fillPolygon(poly);
         }
-        
+
         for(var idx = 0; idx < MINOR_TICK_RADIANS.size(); idx += 1) {
             localTransform.initialize();
             localTransform.rotate(MINOR_TICK_RADIANS[idx]);
