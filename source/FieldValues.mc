@@ -45,9 +45,7 @@ class FieldValues {
 
     private var sunriseTodayNotReached as Boolean = false;
 
-    // TODO for sunrise/sunset
-    // cache this in app/object settings for power cycle recovery?
-    private var lastKnownPosition as Position.Location or Null = null;
+    public var lastKnownPosition as Position.Location or Null = null;
 
     typedef ComplicationData as {
         :compId as Complications.Id,

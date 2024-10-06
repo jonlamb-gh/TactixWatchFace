@@ -1,5 +1,6 @@
 import Toybox.Application;
 import Toybox.Graphics;
+import Toybox.Position;
 import Toybox.Lang;
 import Toybox.System;
 import Toybox.Math;
@@ -209,6 +210,15 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
     // the state of this View and prepare it to be shown. This includes
     // loading resources into memory.
     function onShow() as Void {
+        var lastPositionLat = Application.Storage.getValue("LastPositionLat");
+        var lastPositionLon = Application.Storage.getValue("LastPositionLon");
+        if((lastPositionLat != null) && (lastPositionLon != null)) {
+            fieldValues.lastKnownPosition = new Position.Location({
+                :latitude => lastPositionLat as Lang.Numeric,
+                :longitude => lastPositionLon as Lang.Numeric,
+                :format => :degrees as Lang.Symbol
+            });
+        }
     }
 
     // Update the view
@@ -369,7 +379,13 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
     // state of this View here. This includes freeing resources from
     // memory.
     function onHide() as Void {
-        // Do nothing
+        // Cache last known position
+        if(fieldValues.lastKnownPosition != null) {
+            var lastKnownPosition = fieldValues.lastKnownPosition as Position.Location;
+            var latLonDegrees = lastKnownPosition.toDegrees();
+            Application.Storage.setValue("LastPositionLat", latLonDegrees[0]);
+            Application.Storage.setValue("LastPositionLon", latLonDegrees[1]);
+        }
     }
 
     // The user has just looked at their watch. Timers and animations may be started here.
