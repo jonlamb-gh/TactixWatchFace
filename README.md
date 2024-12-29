@@ -6,7 +6,7 @@ Always-on Garmin watchface for Tactix 7 AMOLED.
 
 ![always_on_mode.png](doc/always_on_mode.png)
 
-24 hour peak luminance usage: 4.90%
+24 hour peak luminance usage: 5.02%
 
 ## Full Power Mode
 

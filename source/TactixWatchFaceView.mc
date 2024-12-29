@@ -86,6 +86,17 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
         [0.0, 8.0],
     ];
 
+    // TODO
+    // SUNRISE_SUNSET
+    //   15 -> 135
+    // HIGH_LOW_TEMPERATURE
+    //   45 -> 105
+    // NOTIFICATIONS
+    //   105 -> 15
+    // NEXT_CALENDAR_EVENT
+    //   135 -> 45
+
+    // Degrees counter-clockwise from the 3 o'clock position
     private static const DATA_FIELD_LAYOUTS as Array<DataFieldLayout> = [
         { :textAngle => 15, :direction => Graphics.RADIAL_TEXT_DIRECTION_CLOCKWISE } as DataFieldLayout,
         { :textAngle => 45, :direction => Graphics.RADIAL_TEXT_DIRECTION_CLOCKWISE } as DataFieldLayout,
@@ -101,12 +112,13 @@ class TactixWatchFaceView extends WatchUi.WatchFace {
         { :textAngle => 345, :direction => Graphics.RADIAL_TEXT_DIRECTION_COUNTER_CLOCKWISE } as DataFieldLayout,
     ];
 
+    // Indices are aligned with DATA_FIELD_LAYOUTS
     private static const DATA_FIELDS as Array<FieldType> = [
-        FIELD_TYPE_SUNRISE_SUNSET,
-        FIELD_TYPE_HIGH_LOW_TEMPERATURE,
-        FIELD_TYPE_WEATHER,
         FIELD_TYPE_NOTIFICATIONS,
         FIELD_TYPE_NEXT_CALENDAR_EVENT,
+        FIELD_TYPE_WEATHER,
+        FIELD_TYPE_HIGH_LOW_TEMPERATURE,
+        FIELD_TYPE_SUNRISE_SUNSET,
         FIELD_TYPE_CONNECTION_STATUS,
         FIELD_TYPE_BATTERY,
         FIELD_TYPE_HEART_RATE,

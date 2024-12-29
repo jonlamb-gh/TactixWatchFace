@@ -3,7 +3,7 @@ fileVersion=1
 
 # font settings
 fontName=Watch_icons
-fontFile=Watch_icons.ttf
+fontFile=icons.ttf
 charSet=0
 fontSize=24
 aa=1
@@ -54,6 +54,6 @@ invB=0
 outlineThickness=0
 
 # selected chars
-chars=97-107
+chars=97-109
 
 # imported icon images

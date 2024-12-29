@@ -397,11 +397,9 @@ class FieldValues {
             var amIdx = minStr.find("a");
             var pmIdx = minStr.find("p");
             var amPmIdx = amIdx != null ? amIdx : pmIdx;
-            System.println(Lang.format("amIdx: $1$ pmIdx: $2$", [amIdx, pmIdx]));
             if(amPmIdx != null) {
                 var amPmStr = minStr.substring(amPmIdx, null) as String;
                 minStr = minStr.substring(0, amPmIdx);
-                System.println(Lang.format("amPmStr: $1$ minStr: $2$", [amPmStr, minStr]));
                 if(amPmStr.equals("p")) {
                     hour += 12;
                 }

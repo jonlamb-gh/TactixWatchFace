@@ -3,8 +3,13 @@
 * icon png, 256x256
 * 11 per row, font size is 24
 * import and transform the glyph svg files using birdfont
-* export to ttf
-* use bmfont or FontForge to convert to fnt and png files
+* export to ttf in birdfont
+* use [bmfont](https://www.angelcode.com/products/bmfont/) (with wine64) to convert to fnt and png files
+  per the [Core Topics Fonts Section](https://developer.garmin.com/connect-iq/core-topics/resources/)
+* `cp font_resources/icons_24_0.png resources/fonts/icons_24_0.png`
+* `cp font_resources/icons_24.fnt resources/fonts/icons_24.fnt`
+* Manually patch `resources/fonts/icons_24.fnt`: TODO fixme
+  - `face="icons_24"`
 
 ## icons
 
